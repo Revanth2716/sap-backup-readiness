@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('')}"></nav>
+
+<div class="page">
+  <div class="panel">
+    <h2>Something went wrong</h2>
+    <p th:text="${error} ?: 'The request could not be processed.'">Error</p>
+    <p class="muted small">
+      If this keeps happening, check the application log - every sign in, every
+      recorded restore test and every report export is written to the audit trail.
+    </p>
+    <a class="btn" href="/">Back to the readiness overview</a>
+  </div>
+</div>
+</body>
+</html>

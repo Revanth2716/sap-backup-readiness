@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title} + ' · ' + ${appName}">SAP Backup &amp; Restore Readiness</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<nav th:fragment="nav(active)" class="topbar">
+  <div class="brand">
+    <span th:text="${appName}">SAP Backup &amp; Restore Readiness</span>
+    <span class="tag" th:text="${sapSystem}">PRD</span>
+  </div>
+
+  <div class="navlinks">
+    <a th:href="@{/}" th:classappend="${active == 'overview'} ? 'active'">Readiness</a>
+    <a th:href="@{/report}" th:classappend="${active == 'report'} ? 'active'"
+       th:if="${currentRole == 'OPS_ADMIN' or currentRole == 'ANALYST'}">Report</a>
+  </div>
+
+  <div class="userbox">
+    <span th:text="${displayName}">User</span>
+    <span class="role" th:text="${currentRole}">ROLE</span>
+    <form th:action="@{/logout}" method="post" style="margin:0">
+      <button class="secondary small" type="submit">Sign out</button>
+    </form>
+  </div>
+</nav>
+
+</body>
+</html>

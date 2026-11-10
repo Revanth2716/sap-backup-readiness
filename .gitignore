@@ -1,0 +1,29 @@
+# Build output
+target/
+
+# Local database
+data/
+*.db
+*.trace.db
+*.mv.db
+
+# Screenshot working files (the captures themselves are committed)
+.screenshot-work/
+
+# Credentials - never commit a live system's connection parameters
+jco.properties
+readiness-local.yml
+readiness-prod.yml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db

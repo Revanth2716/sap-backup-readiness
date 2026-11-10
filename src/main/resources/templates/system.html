@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:with="p=${readiness.profile}">
+<head th:replace="~{fragments/layout :: head(${p.name})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('overview')}"></nav>
+
+<div class="page">
+  <div class="page-head">
+    <div class="between">
+      <div>
+        <h1>
+          <span th:text="${p.name}">PRD</span>
+          <span class="pill" th:if="${p.critical}">critical system</span>
+          <span class="sev" th:classappend="${readiness.severity.cssClass}"
+                th:text="${readiness.severity.label}">Status</span>
+        </h1>
+        <p th:text="${p.description} + ' · SID ' + ${p.sid} + ' · client ' + ${p.client}
+                   + ' · owner ' + ${p.owner}">Description</p>
+      </div>
+      <div class="scorebox">
+        <div class="label">Readiness score</div>
+        <div class="value" th:classappend="${readiness.severity.cssClass()}"
+             th:text="${readiness.score}">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice notice-ok" th:if="${recorded}">
+    The restore test has been recorded. The readiness score has been recalculated.
+  </div>
+
+  <div class="notice notice-info" th:if="${synced != null}">
+    Synchronised from <span th:text="${gateway}">source</span> -
+    <span th:text="${synced}">0</span> new backup records were imported.
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Recovery point objective</div>
+      <div class="value" th:text="${p.rpoHours} + ' h'">0 h</div>
+      <div class="sub">agreed maximum data loss</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Newest recovery point</div>
+      <div class="value" th:classappend="${readiness.lastGoodBackup == null} ? 'critical' : ''"
+           th:text="${readiness.lastGoodBackup == null} ? 'none'
+                    : ${readiness.lastGoodBackup.startedAtDisplay}">none</div>
+      <div class="sub" th:text="${readiness.lastGoodBackup == null}
+            ? 'no successful backup on record'
+            : ${readiness.lastGoodBackup.backupId}">-</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Recovery time objective</div>
+      <div class="value" th:text="${p.rtoHours} + ' h'">0 h</div>
+      <div class="sub">agreed maximum downtime</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Last restore test</div>
+      <div class="value" th:classappend="${readiness.lastRestoreTest == null} ? 'high' : ''"
+           th:text="${readiness.lastRestoreTest == null} ? 'never'
+                    : ${readiness.lastRestoreTest.testedAtDisplay}">never</div>
+      <div class="sub" th:text="${readiness.lastRestoreTest == null}
+            ? 'recovery has never been proven'
+            : ${readiness.lastRestoreTest.result}">-</div>
+    </div>
+    <div class="kpi" th:if="${readiness.forecast != null}">
+      <div class="label">Days to full</div>
+      <div class="value" th:classappend="${readiness.forecast.atRisk} ? 'high' : ''"
+           th:text="${readiness.forecast.daysToFull} ?: 'n/a'">-</div>
+      <div class="sub" th:text="${readiness.forecast.currentSizeGb} + ' GB of '
+            + ${readiness.forecast.maxSizeGb} + ' GB'">-</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>What is wrong with this system</h2>
+    <div class="findings" th:if="${not #lists.isEmpty(readiness.findings)}">
+      <div class="finding" th:each="f : ${readiness.findings}">
+        <div class="finding-head">
+          <span class="sev" th:classappend="${f.severity.cssClass}"
+                th:text="${f.severity.label}">Severity</span>
+          <span class="pill" th:text="${f.category}">CATEGORY</span>
+        </div>
+        <div class="finding-message" th:text="${f.message}">Message</div>
+        <div class="finding-action">
+          <strong>Do this:</strong> <span th:text="${f.recommendation}">Action</span>
+        </div>
+      </div>
+    </div>
+    <div class="notice notice-ok" th:if="${#lists.isEmpty(readiness.findings)}">
+      Nothing to fix - the backups are current, recovery has been proven and there is room.
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="panel">
+      <h2>Capacity</h2>
+      <div class="chart-wrap" th:utext="${capacityChart}"></div>
+      <div class="flex mt" th:if="${readiness.forecast != null}">
+        <span class="pill" th:text="${readiness.forecast.currentSizeGb} + ' GB used'">used</span>
+        <span class="pill" th:text="${readiness.forecast.maxSizeGb} + ' GB maximum'">max</span>
+        <span class="pill" th:text="${readiness.forecast.growthPerDayGb} + ' GB per day'">growth</span>
+        <span class="pill" th:if="${readiness.forecast.atRisk}"
+              th:text="${readiness.forecast.daysToFull} + ' days to full'">days</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Restore test evidence</h2>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>When</th><th>Result</th><th>Minutes</th>
+              <th>By</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="t : ${tests}">
+              <td class="nowrap"><code th:text="${t.testId}">RST</code></td>
+              <td class="muted small nowrap" th:text="${t.testedAtDisplay}">WHEN</td>
+              <td class="nowrap">
+                <span class="pill" th:classappend="${t.result == 'OK'} ? 'status-ok' : 'status-failed'"
+                      th:text="${t.result}">OK</span>
+              </td>
+              <td class="nowrap" th:text="${t.durationMinutes}">0</td>
+              <td class="nowrap small" th:text="${t.performedBy}">WHO</td>
+              <td class="muted small" th:text="${t.notes}">Notes</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(tests)}">
+              <td colspan="6" class="muted center">
+                No restore test has ever been recorded for this system.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Backup history
+      <span class="hint">the most recent
+        <span th:text="${#lists.size(backups)}">0</span> of
+        <span th:text="${backupTotal}">0</span> backup jobs</span>
+    </h2>
+    <div class="flex" th:if="${currentRole == 'OPS_ADMIN'}">
+      <form th:action="@{'/systems/' + ${p.name} + '/sync'}" method="post" style="margin:0">
+        <button class="secondary small" type="submit">Synchronise from the landscape</button>
+      </form>
+      <span class="muted small" th:text="'Source: ' + ${gateway}">Source</span>
+    </div>
+    <div class="scroll mt">
+      <table>
+        <thead>
+          <tr><th>Backup</th><th>Type</th><th>Started</th><th>Finished</th><th>Minutes</th>
+            <th>Size</th><th>Status</th><th>Media</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="b : ${backups}">
+            <td class="nowrap"><code th:text="${b.backupId}">BKP</code></td>
+            <td class="nowrap" th:text="${b.backupType}">FULL</td>
+            <td class="muted small nowrap" th:text="${b.startedAtDisplay}">WHEN</td>
+            <td class="muted small nowrap" th:text="${b.finishedAtDisplay}">WHEN</td>
+            <td class="nowrap" th:text="${b.durationMinutes}">0</td>
+            <td class="nowrap" th:text="${b.sizeGb} + ' GB'">0 GB</td>
+            <td class="nowrap">
+              <span class="pill" th:classappend="${b.status == 'OK'} ? 'status-ok'
+                      : (${b.status == 'FAILED'} ? 'status-failed' : 'status-warning')"
+                    th:text="${b.status}">OK</span>
+            </td>
+            <td class="muted small nowrap" th:text="${b.media}">TAPE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" th:if="${currentRole == 'OPS_ADMIN'}">
+    <h2>Record a restore test</h2>
+    <p class="muted small">
+      The evidence has to be entered somewhere. This is the write path of the
+      application, and it is written to the audit trail.
+    </p>
+    <form th:action="@{'/systems/' + ${p.name} + '/restore-test'}" method="post">
+      <div class="field">
+        <label for="result">Result</label>
+        <select id="result" name="result">
+          <option value="OK">OK - the restore completed</option>
+          <option value="FAILED">FAILED - the restore did not complete</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="testedAt">Test date</label>
+        <input type="date" id="testedAt" name="testedAt" th:value="${today}">
+      </div>
+      <div class="field">
+        <label for="durationMinutes">Duration in minutes</label>
+        <input type="number" id="durationMinutes" name="durationMinutes" value="60" min="1">
+      </div>
+      <div class="field">
+        <label for="performedBy">Performed by</label>
+        <input type="text" id="performedBy" name="performedBy" th:value="${displayName}" required>
+      </div>
+      <div class="field">
+        <label for="notes">Notes</label>
+        <input type="text" id="notes" name="notes"
+               placeholder="Restored into the DR system, data verified against the source">
+      </div>
+      <button type="submit">Record the restore test</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

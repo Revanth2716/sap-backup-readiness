@@ -1,0 +1,73 @@
+server:
+  port: 8084
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+spring:
+  application:
+    name: "SAP Backup & Restore Readiness"
+
+  datasource:
+    url: jdbc:h2:file:./data/readinessdb;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+
+  thymeleaf:
+    cache: true
+    encoding: UTF-8
+
+  mail:
+    host: localhost
+    port: 1025
+
+logging:
+  level:
+    root: INFO
+    com.revzz.sap.readiness: INFO
+
+# ---------------------------------------------------------------------------
+# Application configuration
+# ---------------------------------------------------------------------------
+readiness:
+  application-name: "SAP Backup & Restore Readiness"
+  sap-system: "PRD"
+  # local  - read the backup history from the local database (the default)
+  # jco    - read it from a live SAP system over RFC (needs the with-jco profile)
+  gateway: "local"
+  seed-demo-users: true
+  seed-demo-data: true
+  demo-password: "demo1234"
+
+  seed:
+    # How many days of capacity history each system has.
+    capacity-days: 30
+    random-seed: 20261110
+
+  policy:
+    # A full backup older than this breaches the recovery point objective.
+    max-backup-age-hours: 26
+    # An incremental older than this breaches it as well.
+    max-incremental-age-hours: 8
+    # A restore test older than this is no longer evidence of anything.
+    max-restore-test-age-days: 30
+    # A full backup older than this has to be re-planned - the restore gets
+    # slower as more incrementals pile up on top of it.
+    max-full-backup-age-days: 7
+    # A system that fills up within this many days is a capacity warning.
+    capacity-warning-days: 30
+
+  mail:
+    enabled: false
+    from: "readiness@example.com"
+    to: "basis-team@example.com"
+    subject-prefix: "[SAP Continuity]"

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <h1 th:text="${appName}">SAP Backup &amp; Restore Readiness</h1>
+    <div class="sub">Backup freshness, restore test evidence and capacity risk</div>
+
+    <div class="notice notice-error" th:if="${error}">
+      <span th:if="${error == 'invalid'}">Wrong user name or password.</span>
+      <span th:if="${error != 'invalid'}" th:text="${error}">Error</span>
+    </div>
+
+    <form th:action="@{/login}" method="post">
+      <input type="hidden" name="next" th:value="${next}">
+      <div class="field">
+        <label for="username">User name</label>
+        <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" style="width:100%">Sign in</button>
+    </form>
+
+    <div class="login-demo">
+      <strong>Demo accounts</strong> (password <code th:text="${demoPassword}">demo1234</code>)
+      <div><code>continuity.lead</code> continuity lead - everything, records restore tests</div>
+      <div><code>analyst</code> analyst - analysis and the report</div>
+      <div><code>viewer</code> viewer - readiness overview only</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

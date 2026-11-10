@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:readinesstest;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+
+  thymeleaf:
+    cache: false
+
+logging:
+  level:
+    root: WARN
+    com.revzz.sap.readiness: INFO
+
+readiness:
+  application-name: "SAP Backup & Restore Readiness"
+  sap-system: "PRD"
+  gateway: "local"
+  seed-demo-users: true
+  seed-demo-data: true
+  demo-password: "demo1234"
+  seed:
+    capacity-days: 30
+    random-seed: 20261110
+  policy:
+    max-backup-age-hours: 26
+    max-incremental-age-hours: 8
+    max-restore-test-age-days: 30
+    max-full-backup-age-days: 7
+    capacity-warning-days: 30

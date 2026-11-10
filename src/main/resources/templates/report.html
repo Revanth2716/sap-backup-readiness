@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Report')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('report')}"></nav>
+
+<div class="page">
+  <div class="page-head">
+    <div class="between">
+      <div>
+        <h1>Continuity report</h1>
+        <p>The document that goes into a service review or a risk register.</p>
+      </div>
+      <div class="flex">
+        <a class="btn" th:href="@{/report.md}">Download as Markdown</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Preview <span class="hint" th:text="${lineCount} + ' lines'">0 lines</span></h2>
+    <pre class="code-block" th:text="${markdown}">report</pre>
+  </div>
+
+  <div class="panel">
+    <h2>Recent activity</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr th:each="entry : ${audit}">
+            <td class="muted small nowrap" th:text="${entry.atDisplay}">TS</td>
+            <td class="nowrap" th:text="${entry.username}">USER</td>
+            <td class="nowrap"><span class="pill" th:text="${entry.action}">ACTION</span></td>
+            <td class="muted small" th:text="${entry.detail}">DETAIL</td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(audit)}">
+            <td colspan="4" class="muted center">No activity recorded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------------------
+# Connection parameters for the RFC gateway.
+#
+# Copy this file to jco.properties and fill in the values of the system you
+# want to read. jco.properties is in .gitignore - never commit real
+# credentials.
+#
+# The destination name (SAPPRD in the code) must match an RFC destination in
+# transaction SM59 on the calling system.
+# ---------------------------------------------------------------------------
+
+sap.applicationServer=appserver.example.com
+sap.systemNumber=00
+sap.client=000
+sap.user=RFC_READONLY
+sap.password=change-me

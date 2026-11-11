@@ -1,5 +1,6 @@
 package com.revzz.sap.readiness.web;
 
+import com.revzz.sap.readiness.config.StartupGate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -19,9 +20,24 @@ import javax.servlet.http.HttpSession;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
+    private final StartupGate gate;
+
+    public AuthInterceptor(StartupGate gate) {
+        this.gate = gate;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
+        // The port opens before the seeders have run. Until they have, the
+        // application has nothing worth showing, so it says so rather than
+        // serving a half-built landscape.
+        if (!gate.isReady()) {
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                    "The application is still starting up - try again in a moment.");
+            return false;
+        }
+
         if (request.getRequestURI().startsWith("/api/")) {
             return true;
         }

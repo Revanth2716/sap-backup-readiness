@@ -62,9 +62,8 @@ public final class ReadinessChartRenderer {
                 .append("aria-label=\"Readiness score by system\">");
 
         svg.append("<text x=\"0\" y=\"18\" class=\"c-head\">READINESS SCORE BY SYSTEM</text>");
-        svg.append("<text x=\"").append(labelWidth).append("\" y=\"18\" class=\"c-scale\">0</text>");
-        svg.append("<text x=\"").append(labelWidth + barWidth).append("\" y=\"18\" class=\"c-scale\" ")
-                .append("text-anchor=\"end\">100</text>");
+        svg.append("<text x=\"").append(width).append("\" y=\"18\" class=\"c-scale\" ")
+                .append("text-anchor=\"end\">0 &#8211; 100</text>");
 
         // the track behind every bar
         svg.append("<rect x=\"").append(labelWidth).append("\" y=\"")
